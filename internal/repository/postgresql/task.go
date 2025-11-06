@@ -45,6 +45,7 @@ func (r *TaskRepository) GetByID(ctx context.Context, id int64) (*entities.Task,
 	return &task, nil
 }
 
+// GetByCode retrieves a task by its code
 func (r *TaskRepository) GetByCode(ctx context.Context, code string) (*entities.Task, error) {
 	query := `
 	SELECT id, code,title, reward_points, is_active, created_at
