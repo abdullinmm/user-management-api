@@ -9,5 +9,3 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-  disable:
-    - fieldalignment
