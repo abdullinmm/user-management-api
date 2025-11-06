@@ -2,7 +2,7 @@ package entities
 
 import "time"
 
-// Task represents a task entity
+// Task represents a task entity.
 type Task struct {
 	ID           int64     `json:"id"`
 	Code         string    `json:"code"`
@@ -12,10 +12,19 @@ type Task struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-// UserTask represents a user task entity
+// UserTask represents a user-task relationship.
 type UserTask struct {
-	UserId      int64     `json:"user_id"`
-	TaskId      int64     `json:"task_id"`
+	UserID      int64     `json:"user_id"`
+	TaskID      int64     `json:"task_id"`
 	CompletedAt time.Time `json:"completed_at"`
-	Task        *Task     `json:"task,omitempty"`
+}
+
+// UserTaskWithDetails represents a user-task relationship with details.
+type UserTaskWithDetails struct {
+	UserID       int64     `json:"user_id"`
+	TaskID       int64     `json:"task_id"`
+	CompletedAt  time.Time `json:"completed_at"`
+	TaskCode     string    `json:"task_code"`
+	TaskTitle    string    `json:"task_title"`
+	RewardPoints int64     `json:"reward_points"`
 }

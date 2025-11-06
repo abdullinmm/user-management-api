@@ -6,20 +6,20 @@ import (
 	"time"
 
 	"github.com/abdullinmm/user-management-api/internal/domain/entities"
-	"github.com/abdullinmm/user-management-api/internal/repository"
+	"github.com/abdullinmm/user-management-api/internal/domain/interfaces"
 )
 
 // UserUseCase handles user-related business logic
 type UserUseCase struct {
-	userRepo        repository.UserRepository
-	balanceRepo     repository.BalanceRepository
-	transactionRepo repository.TransactionRepository
+	userRepo        interfaces.UserRepository
+	balanceRepo     interfaces.BalanceRepository
+	transactionRepo interfaces.TransactionRepository
 	referralBonus   int64
 	refereeBonus    int64
 }
 
 // NewUserUseCase creates a new UserUseCase instance
-func NewUserUseCase(userRepo repository.UserRepository, balanceRepo repository.BalanceRepository, transactionRepo repository.TransactionRepository, referralBonus int64, refereeBonus int64) *UserUseCase {
+func NewUserUseCase(userRepo interfaces.UserRepository, balanceRepo interfaces.BalanceRepository, transactionRepo interfaces.TransactionRepository, referralBonus int64, refereeBonus int64) *UserUseCase {
 	return &UserUseCase{
 		userRepo:        userRepo,
 		balanceRepo:     balanceRepo,

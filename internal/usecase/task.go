@@ -6,23 +6,23 @@ import (
 	"time"
 
 	"github.com/abdullinmm/user-management-api/internal/domain/entities"
-	"github.com/abdullinmm/user-management-api/internal/repository"
+	"github.com/abdullinmm/user-management-api/internal/domain/interfaces"
 )
 
 // TaskUseCase handles task-related business logic
 type TaskUseCase struct {
-	taskRepo        repository.TaskRepository
-	userTaskRepo    repository.UserTaskRepository
-	balanceRepo     repository.BalanceRepository
-	transactionRepo repository.TransactionRepository
+	taskRepo        interfaces.TaskRepository
+	userTaskRepo    interfaces.UserTaskRepository
+	balanceRepo     interfaces.BalanceRepository
+	transactionRepo interfaces.TransactionRepository
 }
 
 // NewTaskUseCase creates a new TaskUseCase instance
 func NewTaskUseCase(
-	taskRepo repository.TaskRepository,
-	userTaskRepo repository.UserTaskRepository,
-	balanceRepo repository.BalanceRepository,
-	transactionRepo repository.TransactionRepository,
+	taskRepo interfaces.TaskRepository,
+	userTaskRepo interfaces.UserTaskRepository,
+	balanceRepo interfaces.BalanceRepository,
+	transactionRepo interfaces.TransactionRepository,
 ) *TaskUseCase {
 	return &TaskUseCase{
 		taskRepo:        taskRepo,
@@ -33,7 +33,7 @@ func NewTaskUseCase(
 }
 
 // GetAvailableTasks returns all active tasks
-func (t *TaskUseCase) GetAvailableTasks(ctx context.Context) ([]entities.Task, error) {
+func (t *TaskUseCase) GetAvailableTasks(ctx context.Context) ([]*entities.Task, error) {
 	return t.taskRepo.GetAll(ctx)
 }
 
@@ -95,6 +95,6 @@ func (t *TaskUseCase) CompleteTask(ctx context.Context, userID, taskID int64) er
 }
 
 // GetUserTasks returns completed tasks for user
-func (t *TaskUseCase) GetUserTasks(ctx context.Context, userID int64) ([]entities.UserTask, error) {
+func (t *TaskUseCase) GetUserTasks(ctx context.Context, userID int64) ([]*entities.UserTaskWithDetails, error) {
 	return t.userTaskRepo.GetByUserID(ctx, userID)
 }

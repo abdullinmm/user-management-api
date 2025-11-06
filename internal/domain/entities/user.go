@@ -1,21 +1,27 @@
 package entities
 
-import (
-	"time"
-)
+import "time"
 
-// User represents a user entity
 type User struct {
-	ID            int64     `json:"id"`
-	Username      string    `json:"username"`
-	CreatedAt     time.Time `json:"created_at"`
-	ReferrerID    *int64    `json:"referrer_id,omitempty"`
-	ReferralCount int       `json:"referral_count"`
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	ReferrerID *int64    `json:"referrer_id,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
-// UserWithReferrals represents a user with their referrer and referrals
+// Добавьте эту структуру, если её нет:
 type UserWithReferrals struct {
-	User
-	Referrer  *User  `json:"referrer,omitempty"`
-	Referrals []User `json:"referrals"`
+	ID            int64     `json:"id"`
+	Username      string    `json:"username"`
+	ReferrerID    *int64    `json:"referrer_id,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	ReferralCount int64     `json:"referral_count"`
+}
+
+// И эту для лидерборда:
+type UserWithBalance struct {
+	UserID    int64     `json:"user_id"`
+	Username  string    `json:"username"`
+	Points    int64     `json:"points"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
