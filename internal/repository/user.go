@@ -11,6 +11,6 @@ type UserRepository interface {
 	Create(ctx context.Context, user *entities.User) error
 	GetByID(ctx context.Context, id int64) (*entities.User, error)
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
-	GetWithReferrals(ctx context.Context, id int64) (*entities.User, error)
+	GetWithReferrals(ctx context.Context, id int64) (*entities.UserWithReferrals, error)
 	SetReferrer(ctx context.Context, userID, referrerID int64) error
 }
