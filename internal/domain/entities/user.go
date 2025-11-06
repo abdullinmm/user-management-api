@@ -6,10 +6,11 @@ import (
 
 // User represents a user entity
 type User struct {
-	ID         int64     `json:"id"`
-	Username   string    `json:"username"`
-	CreatedAt  time.Time `json:"created_at"`
-	ReferrerID *int64    `json:"referrer_id,omitempty"`
+	ID            int64     `json:"id"`
+	Username      string    `json:"username"`
+	CreatedAt     time.Time `json:"created_at"`
+	ReferrerID    *int64    `json:"referrer_id,omitempty"`
+	ReferralCount int       `json:"referral_count"`
 }
 
 // UserWithReferrals represents a user with their referrer and referrals

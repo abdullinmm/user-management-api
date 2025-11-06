@@ -29,6 +29,7 @@ func (b *BalanceUseCase) GetUserBalance(ctx context.Context, userID int64) (*ent
 // GetLeaderboard returns top users by points
 func (b *BalanceUseCase) GetLeaderboard(ctx context.Context, limit, offset int) ([]entities.LeaderboardEntry, error) {
 	return b.balanceRepo.GetLeaderboard(ctx, limit, offset)
+
 }
 
 // GetTransactionHistory returns user's transaction history
