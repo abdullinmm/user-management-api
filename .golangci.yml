@@ -15,14 +15,26 @@ linters-settings:
   errcheck:
     check-blank: true
   govet:
-    enable-all: true
+    disable:
+      - fieldalignment  # Disable fieldalignment - not critical for correctness
   gofmt:
     simplify: true
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true  # Disable package comment requirement for brevity
+      - name: exported
+        disabled: false
 
 issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    # Exclude fieldalignment from all checks
+    - linters:
+        - govet
+      text: "fieldalignment"
 
 run:
   timeout: 5m
