@@ -16,6 +16,8 @@ type Config struct {
 }
 
 // Load reads configuration from environment variables
+//
+//nolint:unused // Will be used when main.go is implemented
 func load() (*Config, error) {
 	cfg := &Config{
 		DatabaseURL: getEnv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/user_management?sslmode=disable"),
@@ -41,6 +43,8 @@ func load() (*Config, error) {
 }
 
 // getEnv returns environment variable or default value
+//
+// nolint:unused // Will be used when main.go is implemented
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

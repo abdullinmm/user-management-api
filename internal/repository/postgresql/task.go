@@ -9,17 +9,18 @@ import (
 	"github.com/abdullinmm/user-management-api/internal/domain/entities"
 )
 
-type taskRepository struct {
+// TaskRepository represents a repository for tasks
+type TaskRepository struct {
 	db *pgxpool.Pool
 }
 
 // NewTaskRepository creates a new task repository
-func NewTaskRepository(db *pgxpool.Pool) *taskRepository {
-	return &taskRepository{db: db}
+func NewTaskRepository(db *pgxpool.Pool) *TaskRepository {
+	return &TaskRepository{db: db}
 }
 
 // GetByID retrieves a task by its ID
-func (r *taskRepository) GetByID(ctx context.Context, id int64) (*entities.Task, error) {
+func (r *TaskRepository) GetByID(ctx context.Context, id int64) (*entities.Task, error) {
 	query := `
 		SELECT id, code, title, reward_points, is_active, created_at
 		FROM tasks
@@ -44,7 +45,7 @@ func (r *taskRepository) GetByID(ctx context.Context, id int64) (*entities.Task,
 	return &task, nil
 }
 
-func (r *taskRepository) GetByCode(ctx context.Context, code string) (*entities.Task, error) {
+func (r *TaskRepository) GetByCode(ctx context.Context, code string) (*entities.Task, error) {
 	query := `
 	SELECT id, code,title, reward_points, is_active, created_at
 	FROM tasks
