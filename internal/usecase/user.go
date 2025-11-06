@@ -1,18 +1,18 @@
 package usecases
 
 import (
-	"github.com/abdullinmm/user-management-api/internal/repositories"
+	"github.com/abdullinmm/user-management-api/internal/repository"
 )
 
 type UserUseCase struct {
-	userRepo        repositories.UserRepository
-	balanceRepo     repositories.BalanceRepository
-	transactionRepo repositories.TransactionRepository
+	userRepo        repository.UserRepository
+	balanceRepo     repository.BalanceRepository
+	transactionRepo repository.TransactionRepository
 	referralBonus   int64
 	refereeBonus    int64
 }
 
-func NewUserUseCase(userRepo repositories.UserRepository, balanceRepo repositories.BalanceRepository, transactionRepo repositories.TransactionRepository, referralBonus int64, refereeBonus int64) *UserUseCase {
+func NewUserUseCase(userRepo repository.UserRepository, balanceRepo repository.BalanceRepository, transactionRepo repository.TransactionRepository, referralBonus int64, refereeBonus int64) *UserUseCase {
 	return &UserUseCase{
 		userRepo:        userRepo,
 		balanceRepo:     balanceRepo,
