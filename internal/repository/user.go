@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/abdullinmm/grok-lean-go/user-management-api/internal/domain/entities"
+	"github.com/abdullinmm/user-management-api/internal/domain/entities"
 )
 
 // UserRepository is an interface for user repository.
