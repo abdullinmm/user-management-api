@@ -46,7 +46,9 @@ func (r *BalanceRepository) UpdatePoints(ctx context.Context, userID, delta int6
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx) // Rollback on error
+	}()
 
 	// Update balance with delta, ensuring points don't go negative
 	query := `
