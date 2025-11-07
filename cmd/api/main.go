@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/abdullinmm/user-management-api/internal/config"
+	"github.com/abdullinmm/user-management-api/internal/middleware"
+	jwtpkg "github.com/abdullinmm/user-management-api/internal/pkg/jwt"
 	"github.com/abdullinmm/user-management-api/internal/repository/postgresql"
 	"github.com/abdullinmm/user-management-api/internal/usecase"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	middleware2 "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -47,8 +49,11 @@ func main() {
 	taskUseCase := usecase.NewTaskUseCase(taskRepo, userTaskRepo, balanceRepo, transactionRepo)
 	balanceUseCase := usecase.NewBalanceUseCase(balanceRepo, transactionRepo)
 
+	// Initialize JWT manager
+	jwtManager := jwtpkg.NewManager(cfg.JWTSecret)
+
 	// Initialize HTTP router
-	router := setupRouter(userUseCase, taskUseCase, balanceUseCase)
+	router := setupRouter(userUseCase, taskUseCase, balanceUseCase, jwtManager)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -115,44 +120,74 @@ func initDatabase(databaseURL string) (*pgxpool.Pool, error) {
 }
 
 // setupRouter configures HTTP routes and middleware
-func setupRouter(userUC *usecase.UserUseCase, taskUC *usecase.TaskUseCase, balanceUC *usecase.BalanceUseCase) http.Handler {
+func setupRouter(
+	userUC *usecase.UserUseCase,
+	taskUC *usecase.TaskUseCase,
+	balanceUC *usecase.BalanceUseCase,
+	jwtManager *jwtpkg.Manager,
+) http.Handler {
 	r := chi.NewRouter()
 
-	// Middleware
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
+	// Global middleware
+	r.Use(middleware2.RequestID)
+	r.Use(middleware2.RealIP)
+	r.Use(middleware2.Logger)
+	r.Use(middleware2.Recoverer)
+	r.Use(middleware2.Timeout(60 * time.Second))
 
-	// Health check
+	// Health check (no auth required)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// API routes (will be implemented in next commit)
-	r.Route("/api/v1", func(r chi.Router) {
-		// Users routes
-		r.Route("/users", func(r chi.Router) {
-			// TODO: Implement handlers
-			// r.Post("/", userHandler.Create)
-			// r.Get("/{id}", userHandler.GetByID)
+	// Public routes (no auth required)
+	r.Route("/api/v1/auth", func(r chi.Router) {
+		r.Post("/register", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"registration endpoint - will be implemented in handlers"}`))
 		})
 
-		// Tasks routes
-		r.Route("/tasks", func(r chi.Router) {
-			// TODO: Implement handlers
-			// r.Get("/", taskHandler.ListActive)
-			// r.Post("/{id}/complete", taskHandler.Complete)
+		r.Post("/login", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"login endpoint - will be implemented in handlers"}`))
+		})
+	})
+
+	// Protected routes (JWT auth required)
+	r.Route("/api/v1/users", func(r chi.Router) {
+		// Apply JWT middleware to all routes in this group
+		r.Use(middleware.Auth(jwtManager))
+
+		// GET /users/{id}/status - get user status
+		r.Get("/{id}/status", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"user status endpoint - protected by JWT"}`))
 		})
 
-		// Balance routes
-		r.Route("/balance", func(r chi.Router) {
-			// TODO: Implement handlers
-			// r.Get("/{userId}", balanceHandler.GetByUserID)
-			// r.Get("/leaderboard", balanceHandler.Leaderboard)
+		// GET /users/leaderboard - get top users
+		r.Get("/leaderboard", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"leaderboard endpoint - protected by JWT"}`))
+		})
+
+		// POST /users/{id}/task/complete - complete task
+		r.Post("/{id}/task/complete", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"complete task endpoint - protected by JWT"}`))
+		})
+
+		// POST /users/{id}/referrer - set referrer
+		r.Post("/{id}/referrer", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"message":"set referrer endpoint - protected by JWT"}`))
 		})
 	})
 
