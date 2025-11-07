@@ -494,16 +494,18 @@ http://localhost:8080/api/v1/users/2/status | jq # +50 бонус
 ```
 curl http://localhost:8080/api/v1/users/1/status | jq
 ```
-
+```
 {"error":"missing auth token"}
+```
 
 Невалидный токен
 ```
 curl -H "Authorization: Bearer invalid_token"
 http://localhost:8080/api/v1/users/1/status | jq
 ```
-
+```
 {"error":"invalid token"}
+```
 
 Повторное выполнение задания
 ```
@@ -512,10 +514,9 @@ curl -X POST -H "Authorization: Bearer $TOKEN"
 -d '{"task_id":1}'
 http://localhost:8080/api/v1/users/1/task/complete | jq
 ```
-
+```
 {"error":"task already completed"}
-
-undefined
+```
 
 ##  Разработка
 
