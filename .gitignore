@@ -50,5 +50,6 @@ coverage.html
 
 # Docker volumes
 postgres_data/
-api
-api
+
+# Binary output (only in root)
+/api
