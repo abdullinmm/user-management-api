@@ -5,6 +5,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)
 ![Chi](https://img.shields.io/badge/Chi-v5-blue)
 ![JWT](https://img.shields.io/badge/JWT-v5-green)
+![CI](https://github.com/abdullinmm/-pet-analytics/actions/workflows/ci.yaml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Production-ready REST API для управления пользователями с системой выполнения заданий, реферальной программой и начислением поинтов. Реализовано с использованием Clean Architecture на Go.
