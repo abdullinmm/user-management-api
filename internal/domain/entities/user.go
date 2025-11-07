@@ -7,6 +7,7 @@ type User struct {
 	ID         int64     `json:"id"`
 	ReferrerID *int64    `json:"referrer_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
+	Balance    int64     `json:"balance"`
 	Username   string    `json:"username"`
 }
 

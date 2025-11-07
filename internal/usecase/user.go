@@ -136,6 +136,31 @@ func (u *UserUseCase) givePoints(ctx context.Context, userID, points int64, reas
 	return u.transactionRepo.Create(ctx, transaction)
 }
 
+// Create is an alias for CreateUser with simpler signature
+func (u *UserUseCase) Create(ctx context.Context, username string) (*entities.User, error) {
+	return u.CreateUser(ctx, username, nil)
+}
+
+// GetByID retrieves a user by ID with balance
+func (u *UserUseCase) GetByID(ctx context.Context, userID int64) (*entities.User, error) {
+	// Get user
+	user, err := u.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	// Get balance
+	balance, err := u.balanceRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		// If balance doesn't exist, set to 0
+		user.Balance = 0
+	} else {
+		user.Balance = balance.Points
+	}
+
+	return user, nil
+}
+
 // Helper function to create string pointer
 func stringPtr(s string) *string {
 	return &s
