@@ -20,14 +20,14 @@ type TaskRepository interface {
 	GetByID(ctx context.Context, id int64) (*entities.Task, error)
 	GetByCode(ctx context.Context, code string) (*entities.Task, error)
 	GetActive(ctx context.Context) ([]*entities.Task, error)
-	GetAll(ctx context.Context) ([]*entities.Task, error) // ← Добавьте этот метод
+	GetAll(ctx context.Context) ([]*entities.Task, error)
 }
 
 // UserTaskRepository defines operations for user_tasks
 type UserTaskRepository interface {
 	Create(ctx context.Context, userTask *entities.UserTask) error
 	IsCompleted(ctx context.Context, userID, taskID int64) (bool, error)
-	GetByUserID(ctx context.Context, userID int64) ([]*entities.UserTaskWithDetails, error) // ← Этот тоже нужен
+	GetByUserID(ctx context.Context, userID int64) ([]*entities.UserTaskWithDetails, error)
 	GetAvailableTasksForUser(ctx context.Context, userID int64) ([]*entities.Task, error)
 }
 

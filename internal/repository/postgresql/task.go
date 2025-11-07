@@ -71,3 +71,66 @@ func (r *TaskRepository) GetByCode(ctx context.Context, code string) (*entities.
 
 	return &task, nil
 }
+
+// GetActive retrieves all active tasks
+func (r *TaskRepository) GetActive(ctx context.Context) ([]*entities.Task, error) {
+	query := `
+		SELECT id, code, title, reward_points, is_active, created_at
+		FROM tasks
+		WHERE is_active = true
+		ORDER BY created_at ASC`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []*entities.Task
+	for rows.Next() {
+		var task entities.Task
+		err := rows.Scan(
+			&task.ID, &task.Code, &task.Title,
+			&task.RewardPoints, &task.IsActive, &task.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, &task)
+	}
+
+	return tasks, rows.Err()
+}
+
+// GetAll retrieves all tasks (both active and inactive)
+func (r *TaskRepository) GetAll(ctx context.Context) ([]*entities.Task, error) {
+	query := `
+		SELECT id, code, title, reward_points, is_active, created_at
+		FROM tasks
+		ORDER BY created_at DESC`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []*entities.Task
+	for rows.Next() {
+		var task entities.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Code,
+			&task.Title,
+			&task.RewardPoints,
+			&task.IsActive,
+			&task.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, &task)
+	}
+
+	return tasks, rows.Err()
+}
