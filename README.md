@@ -5,7 +5,6 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)
 ![Chi](https://img.shields.io/badge/Chi-v5-blue)
 ![JWT](https://img.shields.io/badge/JWT-v5-green)
-![CI](https://github.com/abdullinmm/-pet-analytics/actions/workflows/ci.yaml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Production-ready REST API для управления пользователями с системой выполнения заданий, реферальной программой и начислением поинтов. Реализовано с использованием Clean Architecture на Go.
@@ -39,20 +38,26 @@ Production-ready REST API для управления пользователям
 
 Проект следует принципам **Clean Architecture**:
 
-- `cmd/api/` - Точка входа приложения
-- `internal/` - Внутренние пакеты
-  - `domain/` - Бизнес-логика
-    - `entities/` - Сущности (User, Task, Balance)
-    - `interfaces/` - Интерфейсы репозиториев
-  - `usecase/` - Use cases (бизнес-правила)
-  - `repository/postgresql/` - PostgreSQL драйвер
-  - `handler/http/` - REST API handlers
-  - `middleware/` - HTTP middleware (JWT auth)
-  - `pkg/jwt/` - JWT управление
-  - `config/` - Конфигурация
-- `migrations/` - SQL миграции
-- `postman/` - Postman коллекция
-- `docker-compose.yml` - Docker оркестрация
+user-management-api/
+├── cmd/
+│ └── api/ # Точка входа приложения
+├── internal/
+│ ├── domain/ # Бизнес-логика
+│ │ ├── entities/ # Сущности (User, Task, Balance, etc.)
+│ │ └── interfaces/ # Интерфейсы репозиториев
+│ ├── usecase/ # Use cases (бизнес-правила)
+│ ├── repository/ # Реализация репозиториев
+│ │ └── postgresql/ # PostgreSQL драйвер
+│ ├── handler/ # HTTP handlers
+│ │ └── http/ # REST API handlers
+│ ├── middleware/ # HTTP middleware (JWT auth)
+│ ├── pkg/ # Вспомогательные пакеты
+│ │ └── jwt/ # JWT управление
+│ └── config/ # Конфигурация
+├── migrations/ # SQL миграции
+├── postman/ # Postman коллекция
+├── docker-compose.yml # Docker оркестрация
+└── README.md # Документация
 
 
 ##  Технологии
@@ -475,17 +480,137 @@ http://localhost:8080/api/v1/users/2/status | jq # +50 бонус
 
 ### С Postman
 
-1. Импортируйте коллекцию: `postman/User-Management-API.postman_collection.json`
-2. Установите переменные:
+#### Импорт коллекции
+
+**Вариант 1: Локальный файл (рекомендуется)**
+1. Откройте Postman
+2. **File** → **Import**
+3. Вкладка **File** → **Choose Files**
+4. Выберите `postman/User-Management-API.postman_collection.json`
+5. Нажмите **Import**
+
+**Вариант 2: Из GitHub**
+1. В Postman: **File** → **Import**
+2. Вкладка **Link**
+3. Вставьте URL:
+```
+https://raw.githubusercontent.com/abdullinmm/user-management-api/main/postman/User-Management-API.postman_collection.json
+```
+4. Нажмите **Continue** → **Import**
+
+#### Настройка переменных
+
+1. Кликните на коллекцию **User Management API** (в левой панели)
+2. Перейдите на вкладку **Variables**
+3. Установите переменные:
    - `baseUrl` = `http://localhost:8080`
-   - `token` = сгенерированный JWT токен
-3. Выполняйте запросы в порядке:
-   1. Auth > Register User
-   2. Tasks > Get All Tasks
-   3. Users > Get User Status (требуется токен)
-   4. Users > Complete Task (требуется токен)
-   5. Users > Get Leaderboard (требуется токен)
-   6. Users > Set Referrer (требуется токен для нового пользователя)
+   - `token` = (оставьте пустым, заполним после регистрации)
+4. Нажмите **Save** (Ctrl+S)
+
+#### Пошаговое тестирование
+
+##### 1️⃣ Публичные endpoints (не требуют токен)
+
+**Health Check**
+- Откройте запрос **Health Check**
+- Нажмите **Send**
+- Ожидается: `{"status":"ok"}`
+
+**Get All Tasks**
+- Раскройте папку **Tasks**
+- Откройте **List Active Tasks**
+- Нажмите **Send**
+- Ожидается: JSON массив с 5 заданиями
+
+**Register User**
+- Раскройте папку **Auth**
+- Откройте **Register User**
+- На вкладке **Body** измените username на уникальный (например, `postman_test_001`)
+- Нажмите **Send**
+- **Сохраните полученный `id`** (например, 9)
+
+##### 2️⃣ Генерация JWT токена
+
+Выполните в терминале:
+
+```
+cd ~/git_abdullinmm/user-management-api
+
+cat > gen_token.go << 'EOF'
+package main
+import ("fmt";"time";"github.com/golang-jwt/jwt/v5")
+func main() {
+claims := jwt.MapClaims{"user_id": 9, "exp": time.Now().Add(24 * time.Hour).Unix()}
+token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+tokenString, _ := token.SignedString([]byte("your-secret-key-change-in-production"))
+fmt.Println(tokenString)
+}
+EOF
+
+go run gen_token.go
+```
+
+
+**Добавьте токен в Postman:**
+1. Кликните на коллекцию **User Management API**
+2. Вкладка **Variables**
+3. В строке `token` → колонка **Current value** → вставьте токен
+4. Нажмите **Save** (Ctrl+S)
+
+##### 3️⃣ Защищенные endpoints (требуют JWT токен)
+
+**Get User Status**
+- Раскройте папку **Users (Protected)**
+- Откройте **Get User Status**
+- Измените URL на ваш user_id: `/api/v1/users/9/status`
+- Нажмите **Send**
+- Ожидается: информация о пользователе с `balance: 0`
+
+**Complete Task**
+- Откройте **Complete Task**
+- Измените URL: `/api/v1/users/9/task/complete`
+- На вкладке **Body** проверьте: `{"task_id": 1}`
+- Нажмите **Send**
+- Ожидается: `{"message":"task completed successfully"}`
+
+**Проверка баланса**
+- Снова выполните **Get User Status**
+- Ожидается: `balance: 100` (было 0)
+
+**Get Leaderboard**
+- Откройте **Get Leaderboard**
+- Нажмите **Send**
+- Ожидается: список пользователей отсортированных по балансу, ваш пользователь в топе
+
+#### Структура коллекции
+
+User Management API/
+├── Auth/
+│ ├── POST Register User
+│ └── GET Generate Token (Manual) - справочная информация
+├── Tasks/
+│ └── GET List Active Tasks
+├── Users (Protected)/ - требуют JWT токен
+│ ├── GET Get User Status
+│ ├── POST Complete Task
+│ ├── POST Set Referrer
+│ └── GET Get Leaderboard
+└── Health Check
+
+
+#### Troubleshooting
+
+**Ошибка: "Invalid character in header content"**
+- Убедитесь что токен добавлен в **переменные коллекции** (Variables)
+- Проверьте что на вкладке Authorization тип = **Bearer Token** и значение = `{{token}}`
+
+**Ошибка: "missing auth token" или "invalid token"**
+- Сгенерируйте новый токен с правильным user_id
+- Убедитесь что секрет = `your-secret-key-change-in-production`
+- Проверьте что токен сохранен в переменных и переменная называется `token`
+
+**Ошибка: "access denied"**
+- Убедитесь что токен сгенерирован для того же user_id, который используется в URL
 
 ### Проверка ошибок
 
@@ -494,18 +619,16 @@ http://localhost:8080/api/v1/users/2/status | jq # +50 бонус
 ```
 curl http://localhost:8080/api/v1/users/1/status | jq
 ```
-```
+
 {"error":"missing auth token"}
-```
 
 Невалидный токен
 ```
 curl -H "Authorization: Bearer invalid_token"
 http://localhost:8080/api/v1/users/1/status | jq
 ```
-```
+
 {"error":"invalid token"}
-```
 
 Повторное выполнение задания
 ```
@@ -514,9 +637,10 @@ curl -X POST -H "Authorization: Bearer $TOKEN"
 -d '{"task_id":1}'
 http://localhost:8080/api/v1/users/1/task/complete | jq
 ```
-```
+
 {"error":"task already completed"}
-```
+
+undefined
 
 ##  Разработка
 
