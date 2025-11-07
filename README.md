@@ -38,26 +38,20 @@ Production-ready REST API для управления пользователям
 
 Проект следует принципам **Clean Architecture**:
 
-user-management-api/
-├── cmd/
-│ └── api/ # Точка входа приложения
-├── internal/
-│ ├── domain/ # Бизнес-логика
-│ │ ├── entities/ # Сущности (User, Task, Balance, etc.)
-│ │ └── interfaces/ # Интерфейсы репозиториев
-│ ├── usecase/ # Use cases (бизнес-правила)
-│ ├── repository/ # Реализация репозиториев
-│ │ └── postgresql/ # PostgreSQL драйвер
-│ ├── handler/ # HTTP handlers
-│ │ └── http/ # REST API handlers
-│ ├── middleware/ # HTTP middleware (JWT auth)
-│ ├── pkg/ # Вспомогательные пакеты
-│ │ └── jwt/ # JWT управление
-│ └── config/ # Конфигурация
-├── migrations/ # SQL миграции
-├── postman/ # Postman коллекция
-├── docker-compose.yml # Docker оркестрация
-└── README.md # Документация
+- `cmd/api/` - Точка входа приложения
+- `internal/` - Внутренние пакеты
+  - `domain/` - Бизнес-логика
+    - `entities/` - Сущности (User, Task, Balance)
+    - `interfaces/` - Интерфейсы репозиториев
+  - `usecase/` - Use cases (бизнес-правила)
+  - `repository/postgresql/` - PostgreSQL драйвер
+  - `handler/http/` - REST API handlers
+  - `middleware/` - HTTP middleware (JWT auth)
+  - `pkg/jwt/` - JWT управление
+  - `config/` - Конфигурация
+- `migrations/` - SQL миграции
+- `postman/` - Postman коллекция
+- `docker-compose.yml` - Docker оркестрация
 
 
 ##  Технологии
