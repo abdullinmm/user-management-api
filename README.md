@@ -34,31 +34,25 @@ Production-ready REST API для управления пользователям
 - [Тестирование](#тестирование)
 - [Разработка](#разработка)
 
-##  Архитектура
+## 📁 Архитектура
 
 Проект следует принципам **Clean Architecture**:
 
-user-management-api/
-├── cmd/
-│ └── api/ # Точка входа приложения
-├── internal/
-│ ├── domain/ # Бизнес-логика
-│ │ ├── entities/ # Сущности (User, Task, Balance, etc.)
-│ │ └── interfaces/ # Интерфейсы репозиториев
-│ ├── usecase/ # Use cases (бизнес-правила)
-│ ├── repository/ # Реализация репозиториев
-│ │ └── postgresql/ # PostgreSQL драйвер
-│ ├── handler/ # HTTP handlers
-│ │ └── http/ # REST API handlers
-│ ├── middleware/ # HTTP middleware (JWT auth)
-│ ├── pkg/ # Вспомогательные пакеты
-│ │ └── jwt/ # JWT управление
-│ └── config/ # Конфигурация
-├── migrations/ # SQL миграции
-├── postman/ # Postman коллекция
-├── docker-compose.yml # Docker оркестрация
-└── README.md # Документация
-
+- `cmd/api/` - Точка входа приложения
+- `internal/` - Внутренние пакеты
+  - `domain/` - Бизнес-логика
+    - `entities/` - Сущности (User, Task, Balance)
+    - `interfaces/` - Интерфейсы репозиториев
+  - `usecase/` - Use cases (бизнес-правила)
+  - `repository/postgresql/` - PostgreSQL драйвер
+  - `handler/http/` - REST API handlers
+  - `middleware/` - HTTP middleware (JWT auth)
+  - `pkg/jwt/` - JWT управление
+  - `config/` - Конфигурация
+- `migrations/` - SQL миграции
+- `postman/` - Postman коллекция
+- `docker-compose.yml` - Docker оркестрация
+- `README.md` - Документация
 
 ##  Технологии
 
@@ -584,19 +578,18 @@ go run gen_token.go
 
 #### Структура коллекции
 
-User Management API/
-├── Auth/
-│ ├── POST Register User
-│ └── GET Generate Token (Manual) - справочная информация
-├── Tasks/
-│ └── GET List Active Tasks
-├── Users (Protected)/ - требуют JWT токен
-│ ├── GET Get User Status
-│ ├── POST Complete Task
-│ ├── POST Set Referrer
-│ └── GET Get Leaderboard
-└── Health Check
-
+- **User Management API/** - Главная коллекция
+  - **Auth/** - Аутентификация
+    - POST Register User
+    - GET Generate Token (Manual) - справочная информация
+  - **Tasks/** - Задания
+    - GET List Active Tasks
+  - **Users (Protected)/** - Защищенные endpoints (требуют JWT)
+    - GET Get User Status
+    - POST Complete Task
+    - POST Set Referrer
+    - GET Get Leaderboard
+  - **Health Check** - Проверка работы API
 
 #### Troubleshooting
 
