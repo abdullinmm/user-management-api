@@ -301,58 +301,116 @@ psql -U postgres -d user_management -f migrations/001_initial_schema.down.sql
 
 ##  Тестирование
 
-### С Postman
+### Быстрый тест всех endpoints
 
-1. Импортируйте коллекцию: `postman/User-Management-API.postman_collection.json`
-2. Установите переменную `baseUrl` = `http://localhost:8080`
-3. Зарегистрируйте пользователя через **Auth > Register User**
-4. Сгенерируйте JWT токен на [jwt.io](https://jwt.io)
-5. Установите переменную `token` со значением JWT
-6. Тестируйте защищенные endpoints
-
-### С bash скриптом
+Используйте автоматический скрипт для базовой проверки:
 
 ```
 ./test-api.sh
 ```
 
 
-### С curl
+### Ручное тестирование
 
-Health check
+#### Шаг 1: Проверка health check
 
 ```
-curl http://localhost:8080/health
+curl http://localhost:8080/health | jq
 ```
 
-Список заданий
+Ожидается: {"status":"ok"}
+
+
+#### Шаг 2: Список заданий
 
 ```
 curl http://localhost:8080/api/v1/tasks | jq
 ```
 
-Регистрация
+Ожидается: массив из 5 заданий
+
+
+#### Шаг 3: Регистрация пользователя
 
 ```
 curl -X POST http://localhost:8080/api/v1/auth/register
 -H "Content-Type: application/json"
--d '{"username":"testuser"}' | jq
+-d '{"username":"alice"}' | jq
 ```
 
-Установите TOKEN после генерации
+Сохраните полученный user_id (например, 1)
+
+
+#### Шаг 4: Генерация JWT токена
+
+**Важно**: Docker использует секрет `your-secret-key-change-in-production`
+
+##### Вариант 1: С помощью Go (рекомендуется)
 
 ```
-export TOKEN="YOUR_JWT_TOKEN"
+cat > gen_token.go << 'EOF'
+package main
+
+import (
+"fmt"
+"time"
+"github.com/golang-jwt/jwt/v5"
+)
+
+func main() {
+claims := jwt.MapClaims{
+"user_id": 1, // Ваш user_id
+"exp": time.Now().Add(24 * time.Hour).Unix(),
+}
+token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+tokenString, _ := token.SignedString([]byte("your-secret-key-change-in-production"))
+fmt.Println(tokenString)
+}
+EOF
+
+go run gen_token.go
 ```
 
-Статус пользователя
+
+##### Вариант 2: С помощью jwt.io
+
+1. Откройте https://jwt.io
+2. В **PAYLOAD** вставьте:
+
+```
+{
+"user_id": 1,
+"exp": 1767825600
+}
+```
+
+3. В **VERIFY SIGNATURE** замените `your-256-bit-secret` на:
+
+```
+your-secret-key-change-in-production
+```
+
+4. Скопируйте токен из поля **Encoded**
+
+##### Установка токена
+
+```
+export TOKEN="ВАШ_JWT_ТОКЕН"
+echo $TOKEN # Проверьте что установлен
+```
+
+
+#### Шаг 5: Получить статус пользователя
 
 ```
 curl -H "Authorization: Bearer $TOKEN"
 http://localhost:8080/api/v1/users/1/status | jq
 ```
 
-Выполнить задание
+Ожидается: {"id":1,"username":"alice","balance":0,...}
+
+
+#### Шаг 6: Выполнить задание
 
 ```
 curl -X POST -H "Authorization: Bearer $TOKEN"
@@ -361,13 +419,103 @@ curl -X POST -H "Authorization: Bearer $TOKEN"
 http://localhost:8080/api/v1/users/1/task/complete | jq
 ```
 
-Leaderboard
+Проверьте обновленный баланс
 
 ```
 curl -H "Authorization: Bearer $TOKEN"
-"http://localhost:8080/api/v1/users/leaderboard?limit=5" | jq
+http://localhost:8080/api/v1/users/1/status | jq
 ```
 
+
+#### Шаг 7: Leaderboard
+
+```
+curl -H "Authorization: Bearer $TOKEN"
+"http://localhost:8080/api/v1/users/leaderboard?limit=10" | jq
+```
+
+
+#### Шаг 8: Реферальная программа
+
+Создайте второго пользователя
+
+```
+curl -X POST http://localhost:8080/api/v1/auth/register
+-H "Content-Type: application/json"
+-d '{"username":"bob"}' | jq
+```
+
+Сохраните user_id (например, 2)
+Сгенерируйте токен для пользователя 2
+Измените user_id: 2 в gen_token.go и запустите снова
+
+```
+go run gen_token.go
+export TOKEN2="НОВЫЙ_ТОКЕН"
+```
+
+Установите реферера (user_id 1 приглашает user_id 2)
+```
+curl -X POST -H "Authorization: Bearer $TOKEN2"
+-H "Content-Type: application/json"
+-d '{"referrer_id":1}'
+http://localhost:8080/api/v1/users/2/referrer | jq
+```
+
+Проверьте балансы обоих пользователей
+```
+curl -H "Authorization: Bearer $TOKEN"
+http://localhost:8080/api/v1/users/1/status | jq # +100 бонус
+```
+```
+curl -H "Authorization: Bearer $TOKEN2"
+http://localhost:8080/api/v1/users/2/status | jq # +50 бонус
+```
+
+
+### С Postman
+
+1. Импортируйте коллекцию: `postman/User-Management-API.postman_collection.json`
+2. Установите переменные:
+   - `baseUrl` = `http://localhost:8080`
+   - `token` = сгенерированный JWT токен
+3. Выполняйте запросы в порядке:
+   1. Auth > Register User
+   2. Tasks > Get All Tasks
+   3. Users > Get User Status (требуется токен)
+   4. Users > Complete Task (требуется токен)
+   5. Users > Get Leaderboard (требуется токен)
+   6. Users > Set Referrer (требуется токен для нового пользователя)
+
+### Проверка ошибок
+
+Попытка без токена
+
+```
+curl http://localhost:8080/api/v1/users/1/status | jq
+```
+
+{"error":"missing auth token"}
+
+Невалидный токен
+```
+curl -H "Authorization: Bearer invalid_token"
+http://localhost:8080/api/v1/users/1/status | jq
+```
+
+{"error":"invalid token"}
+
+Повторное выполнение задания
+```
+curl -X POST -H "Authorization: Bearer $TOKEN"
+-H "Content-Type: application/json"
+-d '{"task_id":1}'
+http://localhost:8080/api/v1/users/1/task/complete | jq
+```
+
+{"error":"task already completed"}
+
+undefined
 
 ##  Разработка
 
