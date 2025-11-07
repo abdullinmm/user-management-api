@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: user_management_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_management
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - user_management_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: user_management_api
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/user_management?sslmode=disable"
+      JWT_SECRET: "your-secret-key-change-in-production"
+      HTTP_PORT: "8080"
+      REFERRAL_BONUS: "100"
+      REFEREE_BONUS: "50"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - user_management_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  user_management_network:
+    driver: bridge
